@@ -1,33 +1,39 @@
 "use strict";
 
-var Translate = require('@google-cloud/translate');
-var async = require('async');
+const Translate = require('@google-cloud/translate');
+// const async = require('async');
 
-var TranslateService = {};
-var translate = new Translate({
-  keyFilename: './src/translator.conf.json',
+let TranslateService = {};
+let translate = new Translate({
+    keyFilename: './src/translator.conf.json',
 });
 
-TranslateService.translateText = function (content, targetLang, next) {
+TranslateService.translateText = (content, targetLang, next) => {
 
-  var calls = [];
+    return new Promise((resolve, reject) => {
 
-  calls.push(function (callback) {
+        let calls = [];
 
-    translate
-      .translate( content, targetLang )
-      .then(results => {
-        return callback(null, results[0]);
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      });
-  });
+        calls.push(() => translate(content, targetLang));
 
-  async.waterfall(calls, function (err, response) {
-    if (next) next(err, response);
-  });
-};
+        if (err) {
+            reject(console.log('ERROR'));
+        } else {
+            resolve(results => calls(null, results[0]));
+        }
+
+    });
+
+}
+
+translate('quiero trabajar con los mejores', 'en')
+    .then(resp => {
+        console.log(resp.results);
+    })
+    .catch(err => {
+        console.log(err);
+    });
+
 
 
 module.exports = TranslateService;
